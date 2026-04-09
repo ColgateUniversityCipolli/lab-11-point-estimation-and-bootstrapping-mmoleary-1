@@ -98,6 +98,57 @@ For each distribution, write a loop that completes the following 1000 times. Put
 
 Start with $n=20$. Is there evidence that $S_{n-1}^2$ is a better estimator than $S_n^2$?
 
+**Solution**
+```{r}
+set.seed(7272)
+
+#Poisson Distribution
+  psv = c()
+  pad = c()
+for(i in 1:1000){
+  x = rpois(20, 2)
+  psv[i] = var(x)
+  pad[i] = ((20-1)/20)*var(x)
+}
+mean(psv)
+mean(pad)
+
+#Binomial Distribution
+  bsv = c()
+  bad = c()
+for(i in 1:1000){
+  x = rbinom(20, 50, (5-sqrt(21))/10)
+  bsv[i] = var(x)
+  bad[i] = ((20-1)/20)*var(x)
+}
+mean(psv)
+mean(pad)
+
+#Normal Distribution
+  nsv = c()
+  nad = c()
+for(i in 1:1000){
+  x = rnorm(20, 0, sqrt(2))
+  nsv[i] = var(x)
+  nad[i] = ((20-1)/20)*var(x)
+}
+mean(nsv)
+mean(nad)
+
+#Exponential Distribution
+  esv = c()
+  ead = c()
+for(i in 1:1000){
+  x = rexp(20, 1/(sqrt(2)))
+  esv[i] = var(x)
+  ead[i] = ((20-1)/20)*var(x)
+}
+mean(esv)
+mean(ead)
+```
+
+There is evidence that $S_{n-1}^2$ is a better estimator than $S_n^2$ as $S_{n-1}^2$ is closer to the true variance of two by about 10%.
+
 Create a plot or combination of plots (using patchwork) to show the results across all four distributions. Make sure to create a corresponding table that numerically summarizes the results of the simulation. You should include
 \begin{align*}
 \textrm{Bias} &= \textrm{Average of Estimates} - \textrm{True Value}\\
@@ -105,15 +156,427 @@ Create a plot or combination of plots (using patchwork) to show the results acro
 \textrm{Mean Square Error} &= \textrm{Bias}^2 + \textrm{Variance of Estimates}.
 \end{align*}
 
+**Solution**
+
+```{r}
+#| label: fig-poisson
+#| fig-cap: "Poisson Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.p <- tibble(sample.variance = psv,
+                average.squared.distance = pad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.p) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+P.Estimate.Summary = ggdat.p|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Poisson
+#| tbl-cap: "Poisson-Variance-Estimates."
+#| tbl-align: "center"
+P.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-binomial
+#| fig-cap: "Binomial Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.b <- tibble(sample.variance = bsv,
+                average.squared.distance = bad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.b) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+B.Estimate.Summary = ggdat.b|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Binomial
+#| tbl-cap: "Binomial-Variance-Estimates."
+#| tbl-align: "center"
+B.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-normal
+#| fig-cap: "Normal Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.n <- tibble(sample.variance = nsv,
+                average.squared.distance = nad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.n) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+N.Estimate.Summary = ggdat.n|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Normal
+#| tbl-cap: "Normal-Variance-Estimates."
+#| tbl-align: "center"
+N.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-exponential
+#| fig-cap: "Exponential Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.e <- tibble(sample.variance = esv,
+                average.squared.distance = ead) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.e) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+E.Estimate.Summary = ggdat.e|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Exponential
+#| tbl-cap: "Exponential-Variance-Estimates."
+#| tbl-align: "center"
+E.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
 ## Simulation over various sample sizes
 Consider the effect of the sample size have on these results. Provide a graphical and numerical summary of what happens as $n$ increases -- say $n=20$, $n=50$, $n=100$, and $n=500$. Does the result in your initial simulation hold across samples? Or, do things change as the sample size changes? Ensure to set your randomization seed.
  
+**Solution**
+```{r}
+set.seed(7272)
+
+n = 500 #c(20, 50, 100, 500)
+
+#Poisson Distribution
+psv = c()
+pad = c()
+for(i in 1:1000){
+  x = rpois(n, 2)
+  psv[i] = var(x)
+  pad[i] = ((n-1)/n)*var(x)
+}
+mean(psv)
+mean(pad)
+
+#Binomial Distribution
+  bsv = c()
+  bad = c()
+for(i in 1:1000){
+  x = rbinom(n, 50, (5-sqrt(21))/10)
+  bsv[i] = var(x)
+  bad[i] = ((n-1)/n)*var(x)
+}
+mean(psv)
+mean(pad)
+
+#Normal Distribution
+  nsv = c()
+  nad = c()
+for(i in 1:1000){
+  x = rnorm(n, 0, sqrt(2))
+  nsv[i] = var(x)
+  nad[i] = ((n-1)/n)*var(x)
+}
+mean(nsv)
+mean(nad)
+
+#Exponential Distribution
+  esv = c()
+  ead = c()
+for(i in 1:1000){
+  x = rexp(n, 1/(sqrt(2)))
+  esv[i] = var(x)
+  ead[i] = ((n-1)/n)*var(x)
+}
+mean(esv)
+mean(ead)
+```
+
+```{r}
+#| label: fig-poisson2
+#| fig-cap: "Poisson Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.p <- tibble(sample.variance = psv,
+                average.squared.distance = pad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.p) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(-6,10,1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+P.Estimate.Summary = ggdat.p|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Poisson2
+#| tbl-cap: "Poisson-Variance-Estimates."
+#| tbl-align: "center"
+P.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-binomial2
+#| fig-cap: "Binomial Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.b <- tibble(sample.variance = bsv,
+                average.squared.distance = bad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.b) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator*factor(n))
+```
+
+```{r}
+B.Estimate.Summary = ggdat.b|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Binomial2
+#| tbl-cap: "Binomial-Variance-Estimates."
+#| tbl-align: "center"
+B.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-normal2
+#| fig-cap: "Normal Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.n <- tibble(sample.variance = nsv,
+                average.squared.distance = nad) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.n) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+N.Estimate.Summary = ggdat.n|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Normal2
+#| tbl-cap: "Normal-Variance-Estimates."
+#| tbl-align: "center"
+N.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-exponential2
+#| fig-cap: "Exponential Variance Estimation."
+#| fig-width: 5
+#| fig-height: 3
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.e <- tibble(sample.variance = esv,
+                average.squared.distance = ead) |>
+ pivot_longer(everything(),
+ names_to = "Estimator",
+ values_to = "Estimate")
+ 
+ggplot(ggdat.e) +
+ geom_histogram(aes(x = Estimate, 
+                    y = after_stat(density)),
+                    breaks=seq(0,4,0.1), color="grey")+
+ geom_hline(yintercept=0)+
+ theme_bw() +
+ labs(x= "Variance",
+      y="Density") +
+ facet_wrap(~Estimator)
+```
+
+```{r}
+E.Estimate.Summary = ggdat.e|>
+  group_by(Estimator) |>
+  summarize(
+    Bias = mean(Estimate) - 2,
+    Mean = mean(Estimate),
+    Precision = 1/(var(Estimate)),
+    MSE = Bias^2 + var(Estimate),
+  )
+```
+
+```{r}
+#| label: tbl-Exponential2
+#| tbl-cap: "Exponential-Variance-Estimates."
+#| tbl-align: "center"
+E.Estimate.Summary |>
+  knitr::kable(digits = 2)
+```
+
 ## Simulation
 You have written code to draw a random sample of various sizes from each distribution, and to calculate and store the calculated estimates. Rework your code to produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do you have a guess about their distribution? Ensure to set your randomization seed. 
 
 ## Bootstrap
 Now, take *one* sample from each distribution. Instead of drawing a random sample at each iteration, sample *with replacement* from the one sample. Produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do we get roughly the same information as we do in the full simulation? Try this over several seeds -- what do you notice? Ensure to set your randomization seed.
-
 
 # Executive Summary
 Summarize the work you've done here to provide a brief (200-300 word) summary of the simulation and the results using your work in Lab 11. Your summary should be professional, clear, and all claims should be corroborated with statistical support.
