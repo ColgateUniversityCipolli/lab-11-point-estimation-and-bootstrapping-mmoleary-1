@@ -345,85 +345,136 @@ Consider the effect of the sample size have on these results. Provide a graphica
 ```{r}
 set.seed(7272)
 
-n = 500 #c(20, 50, 100, 500)
-
 #Poisson Distribution
-psv = c()
-pad = c()
-for(i in 1:1000){
-  x = rpois(n, 2)
-  psv[i] = var(x)
-  pad[i] = ((n-1)/n)*var(x)
-}
-mean(psv)
-mean(pad)
+  psv = function(n) {
+    psv_vals = numeric(1000)
+    for (i in 1:1000) {
+      x = rpois(n, 2)
+      psv_vals[i] = var(x)
+    }
+    
+    return(psv_vals)
+  }
+
+  pad = function(n) {
+    pad_vals = numeric(1000)
+    for (i in 1:1000) {
+      x = rpois(n, 2)
+      pad_vals[i] = ((n-1)/n)*var(x)
+    }
+    
+    return(pad_vals)
+  }
 
 #Binomial Distribution
-  bsv = c()
-  bad = c()
-for(i in 1:1000){
-  x = rbinom(n, 50, (5-sqrt(21))/10)
-  bsv[i] = var(x)
-  bad[i] = ((n-1)/n)*var(x)
-}
-mean(psv)
-mean(pad)
+  bsv = function(n) {
+    bsv_vals = numeric(1000)
+    for (i in 1:1000) {
+      x = rbinom(n, 50, (5-sqrt(21))/10)
+      bsv_vals[i] = var(x)
+    }
+    
+    return(bsv_vals)
+  }
+
+  bad = function(n) {
+    bad_vals = numeric(1000)
+    for (i in 1:1000) {
+      x = rbinom(n, 50, (5-sqrt(21))/10)
+      bad_vals[i] = ((n-1)/n)*var(x)
+    }
+    
+    return(bad_vals)
+  }
 
 #Normal Distribution
-  nsv = c()
-  nad = c()
-for(i in 1:1000){
-  x = rnorm(n, 0, sqrt(2))
-  nsv[i] = var(x)
-  nad[i] = ((n-1)/n)*var(x)
-}
-mean(nsv)
-mean(nad)
+
+  nsv = function(n) {
+    nsv_vals = numeric(1000)
+    for (i in 1:1000) {
+      x =  rnorm(n, 0, sqrt(2))
+      nsv_vals[i] = var(x)
+    }
+    
+    return(nsv_vals)
+  }
+
+  nad = function(n) {
+    nad_vals = numeric(1000)
+    for (i in 1:1000) {
+      x =  rnorm(n, 0, sqrt(2))
+      nad_vals[i] = ((n-1)/n)*var(x)
+    }
+    
+    return(nad_vals)
+  }
 
 #Exponential Distribution
-  esv = c()
-  ead = c()
-for(i in 1:1000){
-  x = rexp(n, 1/(sqrt(2)))
-  esv[i] = var(x)
-  ead[i] = ((n-1)/n)*var(x)
-}
-mean(esv)
-mean(ead)
+  esv = function(n) {
+    esv_vals = numeric(1000)
+    for (i in 1:1000) {
+      x =  rexp(n, 1/(sqrt(2)))
+      esv_vals[i] = var(x)
+    }
+    
+    return(esv_vals)
+  }
+
+  ead = function(n) {
+    ead_vals = numeric(1000)
+    for (i in 1:1000) {
+      x =  rexp(n, 1/(sqrt(2)))
+      ead_vals[i] = ((n-1)/n)*var(x)
+    }
+    
+    return(ead_vals)
+  }
 ```
 
 ```{r}
 #| label: fig-poisson2
 #| fig-cap: "Poisson Variance Estimation."
-#| fig-width: 5
-#| fig-height: 3
+#| fig-width: 12
+#| fig-height: 6
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
 
-ggdat.p <- tibble(sample.variance = psv,
-                average.squared.distance = pad) |>
- pivot_longer(everything(),
- names_to = "Estimator",
- values_to = "Estimate")
- 
+n_values <- c(20, 50, 100, 500)
+
+ggdat.p <- lapply(n_values, function(n) {
+  tibble(
+    n = n,
+    sample.variance = psv(n),
+    average.squared.distance = pad(n)
+  )
+}) |>
+  bind_rows() |>
+  pivot_longer(
+    cols = c(sample.variance, average.squared.distance),
+    names_to = "Estimator",
+    values_to = "Estimate"
+  )
+
 ggplot(ggdat.p) +
- geom_histogram(aes(x = Estimate, 
-                    y = after_stat(density)),
-                    breaks=seq(-6,10,1), color="grey")+
- geom_hline(yintercept=0)+
- theme_bw() +
- labs(x= "Variance",
-      y="Density") +
- facet_wrap(~Estimator)
+  geom_histogram(
+    aes(x = Estimate, y = after_stat(density)),
+    breaks = seq(0, 4, 0.1),
+    color = "grey"
+  ) +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  labs(x = "Variance", y = "Density") +
+  facet_grid(Estimator ~ n)
 ```
 
 ```{r}
 P.Estimate.Summary = ggdat.p|>
-  group_by(Estimator) |>
+  group_by(n, Estimator) |>
   summarize(
     Bias = mean(Estimate) - 2,
     Mean = mean(Estimate),
+    Variance = var(Estimate),
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
@@ -440,35 +491,47 @@ P.Estimate.Summary |>
 ```{r}
 #| label: fig-binomial2
 #| fig-cap: "Binomial Variance Estimation."
-#| fig-width: 5
-#| fig-height: 3
+#| fig-width: 12
+#| fig-height: 6
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
 
-ggdat.b <- tibble(sample.variance = bsv,
-                average.squared.distance = bad) |>
- pivot_longer(everything(),
- names_to = "Estimator",
- values_to = "Estimate")
- 
+n_values = c(20, 50, 100, 500)
+
+ggdat.b = lapply(n_values, function(n) {
+  tibble(
+    n = n,
+    sample.variance = bsv(n),
+    average.squared.distance = bad(n)
+  )
+}) |>
+  bind_rows() |>
+  pivot_longer(
+    cols = c(sample.variance, average.squared.distance),
+    names_to = "Estimator",
+    values_to = "Estimate"
+  )
+
 ggplot(ggdat.b) +
- geom_histogram(aes(x = Estimate, 
-                    y = after_stat(density)),
-                    breaks=seq(0,4,0.1), color="grey")+
- geom_hline(yintercept=0)+
- theme_bw() +
- labs(x= "Variance",
-      y="Density") +
- facet_wrap(~Estimator*factor(n))
+  geom_histogram(
+    aes(x = Estimate, y = after_stat(density)),
+    breaks = seq(0, 4, 0.1),
+    color = "grey"
+  ) +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  labs(x = "Variance", y = "Density") +
+  facet_grid(Estimator ~ n)
 ```
 
 ```{r}
 B.Estimate.Summary = ggdat.b|>
-  group_by(Estimator) |>
+  group_by(n, Estimator) |>
   summarize(
     Bias = mean(Estimate) - 2,
     Mean = mean(Estimate),
+    Variance = var(Estimate),
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
@@ -485,35 +548,47 @@ B.Estimate.Summary |>
 ```{r}
 #| label: fig-normal2
 #| fig-cap: "Normal Variance Estimation."
-#| fig-width: 5
-#| fig-height: 3
+#| fig-width: 12
+#| fig-height: 6
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
 
-ggdat.n <- tibble(sample.variance = nsv,
-                average.squared.distance = nad) |>
- pivot_longer(everything(),
- names_to = "Estimator",
- values_to = "Estimate")
- 
+n_values = c(20, 50, 100, 500)
+
+ggdat.n = lapply(n_values, function(n) {
+  tibble(
+    n = n,
+    sample.variance = nsv(n),
+    average.squared.distance = nad(n)
+  )
+}) |>
+  bind_rows() |>
+  pivot_longer(
+    cols = c(sample.variance, average.squared.distance),
+    names_to = "Estimator",
+    values_to = "Estimate"
+  )
+
 ggplot(ggdat.n) +
- geom_histogram(aes(x = Estimate, 
-                    y = after_stat(density)),
-                    breaks=seq(0,4,0.1), color="grey")+
- geom_hline(yintercept=0)+
- theme_bw() +
- labs(x= "Variance",
-      y="Density") +
- facet_wrap(~Estimator)
+  geom_histogram(
+    aes(x = Estimate, y = after_stat(density)),
+    breaks = seq(0, 4, 0.1),
+    color = "grey"
+  ) +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  labs(x = "Variance", y = "Density") +
+  facet_grid(Estimator ~ n)
 ```
 
 ```{r}
 N.Estimate.Summary = ggdat.n|>
-  group_by(Estimator) |>
+  group_by(n, Estimator) |>
   summarize(
     Bias = mean(Estimate) - 2,
     Mean = mean(Estimate),
+    Variance = var(Estimate),
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
@@ -530,35 +605,47 @@ N.Estimate.Summary |>
 ```{r}
 #| label: fig-exponential2
 #| fig-cap: "Exponential Variance Estimation."
-#| fig-width: 5
-#| fig-height: 3
+#| fig-width: 12
+#| fig-height: 6
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
 
-ggdat.e <- tibble(sample.variance = esv,
-                average.squared.distance = ead) |>
- pivot_longer(everything(),
- names_to = "Estimator",
- values_to = "Estimate")
- 
+n_values = c(20, 50, 100, 500)
+
+ggdat.e = lapply(n_values, function(n) {
+  tibble(
+    n = n,
+    sample.variance = esv(n),
+    average.squared.distance = ead(n)
+  )
+}) |>
+  bind_rows() |>
+  pivot_longer(
+    cols = c(sample.variance, average.squared.distance),
+    names_to = "Estimator",
+    values_to = "Estimate"
+  )
+
 ggplot(ggdat.e) +
- geom_histogram(aes(x = Estimate, 
-                    y = after_stat(density)),
-                    breaks=seq(0,4,0.1), color="grey")+
- geom_hline(yintercept=0)+
- theme_bw() +
- labs(x= "Variance",
-      y="Density") +
- facet_wrap(~Estimator)
+  geom_histogram(
+    aes(x = Estimate, y = after_stat(density)),
+    breaks = seq(0, 4, 0.1),
+    color = "grey"
+  ) +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  labs(x = "Variance", y = "Density") +
+  facet_grid(Estimator ~ n)
 ```
 
 ```{r}
 E.Estimate.Summary = ggdat.e|>
-  group_by(Estimator) |>
+  group_by(n, Estimator) |>
   summarize(
     Bias = mean(Estimate) - 2,
     Mean = mean(Estimate),
+    Variance = var(Estimate),
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
