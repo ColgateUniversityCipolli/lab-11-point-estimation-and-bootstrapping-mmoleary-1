@@ -662,8 +662,155 @@ E.Estimate.Summary |>
 ## Simulation
 You have written code to draw a random sample of various sizes from each distribution, and to calculate and store the calculated estimates. Rework your code to produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do you have a guess about their distribution? Ensure to set your randomization seed. 
 
+```{r}
+#| label: fig-poisson3
+#| fig-cap: "Poisson Density Plot Variance Estimation."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+library(ggridges)
+
+ggplot(ggdat.p) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Poisson") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-binomial3
+#| fig-cap: "Binomial Density Plot Variance Estimation."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+
+ggplot(ggdat.b) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Binomial") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-normal3
+#| fig-cap: "Normal Density Plot Variance Estimation."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+
+ggplot(ggdat.n) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Normal") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-exponential3
+#| fig-cap: "Exponential Density Plot Variance Estimation."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+
+ggplot(ggdat.e) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Exponential") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
 ## Bootstrap
 Now, take *one* sample from each distribution. Instead of drawing a random sample at each iteration, sample *with replacement* from the one sample. Produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do we get roughly the same information as we do in the full simulation? Try this over several seeds -- what do you notice? Ensure to set your randomization seed.
+
+```{r}
+set.seed(7272)
+
+n.values = c(20, 50, 100, 500)
+
+# poisson
+ pois.sample = list()
+ psv_b = list()
+ pad_b = list()
+ psv = rep(NA, 1000)
+ pad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  pois.sample[[as.character(n)]] <- rpois(n = n, lambda = 2)
+  for(i in 1:1000){
+    curr.sample = sample(pois.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    psv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    pad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  psv_b[[as.character(n)]] = psv
+  pad_b[[as.character(n)]] = pad
+}
+```
+
+```{r}
+#| label: fig-poisson-bootstrap
+#| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+
+ggdat.pb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(psv_b[["20"]], pad_b[["20"]],
+psv_b[["50"]], pad_b[["50"]],
+psv_b[["100"]], pad_b[["100"]],
+psv_b[["500"]], pad_b[["500"]])
+)
+
+ggplot(ggdat.pb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Poisson") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
 
 # Executive Summary
 Summarize the work you've done here to provide a brief (200-300 word) summary of the simulation and the results using your work in Lab 11. Your summary should be professional, clear, and all claims should be corroborated with statistical support.
