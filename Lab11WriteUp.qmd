@@ -754,6 +754,8 @@ theme_bw()
 ## Bootstrap
 Now, take *one* sample from each distribution. Instead of drawing a random sample at each iteration, sample *with replacement* from the one sample. Produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do we get roughly the same information as we do in the full simulation? Try this over several seeds -- what do you notice? Ensure to set your randomization seed.
 
+With Seed(7272)
+
 ```{r}
 set.seed(7272)
 
@@ -778,6 +780,66 @@ for(n in n.values){
   psv_b[[as.character(n)]] = psv
   pad_b[[as.character(n)]] = pad
 }
+
+# binomial
+ binom.sample = list()
+ bsv_b = list()
+ bad_b = list()
+ bsv = rep(NA, 1000)
+ bad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  binom.sample[[as.character(n)]] = rbinom(n, 50, (5-sqrt(21))/10)
+  for(i in 1:1000){
+    curr.sample = sample(binom.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    bsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    bad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  bsv_b[[as.character(n)]] = bsv
+  bad_b[[as.character(n)]] = bad
+}
+
+# normal
+ norm.sample = list()
+ nsv_b = list()
+ nad_b = list()
+ nsv = rep(NA, 1000)
+ nad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  norm.sample[[as.character(n)]] = rnorm(n, 0, sqrt(2))
+  for(i in 1:1000){
+    curr.sample = sample(norm.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    nsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    nad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  nsv_b[[as.character(n)]] = nsv
+  nad_b[[as.character(n)]] = nad
+}
+
+# exponential
+ exp.sample = list()
+ esv_b = list()
+ ead_b = list()
+ esv = rep(NA, 1000)
+ ead = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  exp.sample[[as.character(n)]] = rexp(n, 1/(sqrt(2)))
+  for(i in 1:1000){
+    curr.sample = sample(exp.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    esv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    ead[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  esv_b[[as.character(n)]] = esv
+  ead_b[[as.character(n)]] = ead
+}
 ```
 
 ```{r}
@@ -788,8 +850,6 @@ for(n in n.values){
 #| scale: "80%"
 #| fig-align: "center"
 #| size: scriptsize
-
-set.seed(7272)
 
 ggdat.pb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -805,6 +865,511 @@ ggplot(ggdat.pb) +
 geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
 geom_hline(yintercept = 0) +
 ggtitle("Poisson") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-binomial-bootstrap
+#| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.bb <- tibble(
+Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(bsv_b[["20"]], bad_b[["20"]],
+bsv_b[["50"]], bad_b[["50"]],
+bsv_b[["100"]], bad_b[["100"]],
+bsv_b[["500"]], bad_b[["500"]])
+)
+
+ggplot(ggdat.bb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Binomial") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-normal-bootstrap
+#| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.nb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(nsv_b[["20"]], nad_b[["20"]],
+nsv_b[["50"]], nad_b[["50"]],
+nsv_b[["100"]], nad_b[["100"]],
+nsv_b[["500"]], nad_b[["500"]])
+)
+
+ggplot(ggdat.nb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Normal") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+```
+
+```{r}
+#| label: fig-exponential-bootstrap
+#| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.eb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(psv_b[["20"]], pad_b[["20"]],
+psv_b[["50"]], pad_b[["50"]],
+psv_b[["100"]], pad_b[["100"]],
+psv_b[["500"]], pad_b[["500"]])
+)
+
+ggplot(ggdat.eb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Exponential") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+```
+
+With seed(1325)
+
+```{r}
+set.seed(1325)
+
+n.values = c(20, 50, 100, 500)
+
+# poisson
+ pois.sample = list()
+ psv_b = list()
+ pad_b = list()
+ psv = rep(NA, 1000)
+ pad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  pois.sample[[as.character(n)]] <- rpois(n = n, lambda = 2)
+  for(i in 1:1000){
+    curr.sample = sample(pois.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    psv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    pad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  psv_b[[as.character(n)]] = psv
+  pad_b[[as.character(n)]] = pad
+}
+
+# binomial
+ binom.sample = list()
+ bsv_b = list()
+ bad_b = list()
+ bsv = rep(NA, 1000)
+ bad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  binom.sample[[as.character(n)]] = rbinom(n, 50, (5-sqrt(21))/10)
+  for(i in 1:1000){
+    curr.sample = sample(binom.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    bsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    bad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  bsv_b[[as.character(n)]] = bsv
+  bad_b[[as.character(n)]] = bad
+}
+
+# normal
+ norm.sample = list()
+ nsv_b = list()
+ nad_b = list()
+ nsv = rep(NA, 1000)
+ nad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  norm.sample[[as.character(n)]] = rnorm(n, 0, sqrt(2))
+  for(i in 1:1000){
+    curr.sample = sample(norm.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    nsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    nad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  nsv_b[[as.character(n)]] = nsv
+  nad_b[[as.character(n)]] = nad
+}
+
+# exponential
+ exp.sample = list()
+ esv_b = list()
+ ead_b = list()
+ esv = rep(NA, 1000)
+ ead = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  exp.sample[[as.character(n)]] = rexp(n, 1/(sqrt(2)))
+  for(i in 1:1000){
+    curr.sample = sample(exp.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    esv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    ead[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  esv_b[[as.character(n)]] = esv
+  ead_b[[as.character(n)]] = ead
+}
+```
+
+```{r}
+#| label: fig-poisson-bootstrap2
+#| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.pb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(psv_b[["20"]], pad_b[["20"]],
+psv_b[["50"]], pad_b[["50"]],
+psv_b[["100"]], pad_b[["100"]],
+psv_b[["500"]], pad_b[["500"]])
+)
+
+ggplot(ggdat.pb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Poisson") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-binomial-bootstrap2
+#| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.bb <- tibble(
+Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(bsv_b[["20"]], bad_b[["20"]],
+bsv_b[["50"]], bad_b[["50"]],
+bsv_b[["100"]], bad_b[["100"]],
+bsv_b[["500"]], bad_b[["500"]])
+)
+
+ggplot(ggdat.bb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Binomial") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-normal-bootstrap2
+#| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.nb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(nsv_b[["20"]], nad_b[["20"]],
+nsv_b[["50"]], nad_b[["50"]],
+nsv_b[["100"]], nad_b[["100"]],
+nsv_b[["500"]], nad_b[["500"]])
+)
+
+ggplot(ggdat.nb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Normal") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+```
+
+```{r}
+#| label: fig-exponential-bootstrap2
+#| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+
+ggdat.eb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(esv_b[["20"]], ead_b[["20"]],
+esv_b[["50"]], ead_b[["50"]],
+esv_b[["100"]], ead_b[["100"]],
+esv_b[["500"]], ead_b[["500"]])
+)
+
+ggplot(ggdat.eb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Exponential") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+With Seed(3434)
+
+```{r}
+set.seed(3434)
+
+n.values = c(20, 50, 100, 500)
+
+# poisson
+ pois.sample = list()
+ psv_b = list()
+ pad_b = list()
+ psv = rep(NA, 1000)
+ pad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  pois.sample[[as.character(n)]] <- rpois(n = n, lambda = 2)
+  for(i in 1:1000){
+    curr.sample = sample(pois.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    psv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    pad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  psv_b[[as.character(n)]] = psv
+  pad_b[[as.character(n)]] = pad
+}
+
+# binomial
+ binom.sample = list()
+ bsv_b = list()
+ bad_b = list()
+ bsv = rep(NA, 1000)
+ bad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  binom.sample[[as.character(n)]] = rbinom(n, 50, (5-sqrt(21))/10)
+  for(i in 1:1000){
+    curr.sample = sample(binom.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    bsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    bad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  bsv_b[[as.character(n)]] = bsv
+  bad_b[[as.character(n)]] = bad
+}
+
+# normal
+ norm.sample = list()
+ nsv_b = list()
+ nad_b = list()
+ nsv = rep(NA, 1000)
+ nad = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  norm.sample[[as.character(n)]] = rnorm(n, 0, sqrt(2))
+  for(i in 1:1000){
+    curr.sample = sample(norm.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    nsv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    nad[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  nsv_b[[as.character(n)]] = nsv
+  nad_b[[as.character(n)]] = nad
+}
+
+# exponential
+ exp.sample = list()
+ esv_b = list()
+ ead_b = list()
+ esv = rep(NA, 1000)
+ ead = rep(NA, 1000)
+ 
+for(n in n.values){
+# take 1 random sample of different sizes
+  exp.sample[[as.character(n)]] = rexp(n, 1/(sqrt(2)))
+  for(i in 1:1000){
+    curr.sample = sample(exp.sample[[as.character(n)]], size = n, replace = TRUE)
+    x_bar = mean(curr.sample)
+    esv[i] = sum((curr.sample - x_bar)^2) / (n - 1)
+    ead[i] = sum((curr.sample - x_bar)^2) / n
+  }
+  esv_b[[as.character(n)]] = esv
+  ead_b[[as.character(n)]] = ead
+}
+```
+
+```{r}
+#| label: fig-poisson-bootstrap3
+#| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.pb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(psv_b[["20"]], pad_b[["20"]],
+psv_b[["50"]], pad_b[["50"]],
+psv_b[["100"]], pad_b[["100"]],
+psv_b[["500"]], pad_b[["500"]])
+)
+
+ggplot(ggdat.pb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Poisson") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-binomial-bootstrap3
+#| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.bb <- tibble(
+Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(bsv_b[["20"]], bad_b[["20"]],
+bsv_b[["50"]], bad_b[["50"]],
+bsv_b[["100"]], bad_b[["100"]],
+bsv_b[["500"]], bad_b[["500"]])
+)
+
+ggplot(ggdat.bb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Binomial") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+
+```
+
+```{r}
+#| label: fig-normal-bootstrap3
+#| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+ggdat.nb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(nsv_b[["20"]], nad_b[["20"]],
+nsv_b[["50"]], nad_b[["50"]],
+nsv_b[["100"]], nad_b[["100"]],
+nsv_b[["500"]], nad_b[["500"]])
+)
+
+ggplot(ggdat.nb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Normal") +
+# lets each facet panel have its own x and y axes instead of forcing them to share the same range
+facet_wrap(~ n, scales = "free") +
+ylab("Density") +
+theme_bw()
+```
+
+```{r}
+#| label: fig-exponential-bootstrap3
+#| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
+#| fig-width: 12
+#| fig-height: 6
+#| scale: "80%"
+#| fig-align: "center"
+#| size: scriptsize
+
+set.seed(7272)
+
+ggdat.eb <- tibble(
+Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
+n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
+levels = c("n=20", "n=50", "n=100", "n=500")),
+Estimate = c(esv_b[["20"]], ead_b[["20"]],
+esv_b[["50"]], ead_b[["50"]],
+esv_b[["100"]], ead_b[["100"]],
+esv_b[["500"]], ead_b[["500"]])
+)
+
+ggplot(ggdat.eb) +
+geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
+geom_hline(yintercept = 0) +
+ggtitle("Exponential") +
 # lets each facet panel have its own x and y axes instead of forcing them to share the same range
 facet_wrap(~ n, scales = "free") +
 ylab("Density") +
