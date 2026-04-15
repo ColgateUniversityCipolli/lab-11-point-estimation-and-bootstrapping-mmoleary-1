@@ -754,6 +754,10 @@ theme_bw()
 ## Bootstrap
 Now, take *one* sample from each distribution. Instead of drawing a random sample at each iteration, sample *with replacement* from the one sample. Produce a density plot of the $s_{n-1}^2$ and $s_{n}^2$. Do we get roughly the same information as we do in the full simulation? Try this over several seeds -- what do you notice? Ensure to set your randomization seed.
 
+**Solution**
+
+With the bootstrap sample, as with having multiple smaples, the sampling distributions of variance typically follow a Gaussian distribution, becoming more normal and symmetric as the number of replacements increase (similar to if the number of samples increased). However, using bootstrapping can lead to less accurate data, as these distributions were centered at values other than the true population variance of two. Thus, it is important that only a representative sample is bootstrapped, which is often incredibly difficult. Additionally, as the number of replacements increased, the respective distributions of average squared distance away from the mean and the sample variance became very similar.
+
 With Seed(7272)
 
 ```{r}
@@ -1379,3 +1383,11 @@ theme_bw()
 
 # Executive Summary
 Summarize the work you've done here to provide a brief (200-300 word) summary of the simulation and the results using your work in Lab 11. Your summary should be professional, clear, and all claims should be corroborated with statistical support.
+
+By using histograms as my main visualization of data, I was more able to see the potential skew of sampling distributions and the amount of kurtosus of these distributions, however I did have to rely more on my numerical summaries of tables to gain greater insight on the distributions' accuracy. The current sample variance calculation is a better estimate of variance as opposed to the average squared distance from the mean as sampling distributions of these measures of variance demonstrate that the current sample variance measurement as it is often less bias across the poisson, binomial, normal, and exponential distributions. While the current calculation has worse precision, the accuracy is more helpful in estimating a population's true variance. Additionally, the sampling distributions of the sample variance is much less skewed than the average squared distance from the mean, which is often right-skewed, demonstrating that this parameter estimation often favors a lower population variance than the true parameter. The density plots demonstrate that while tbe average squared distance away from the mean is very precise, this estimate is incredibly likely to report a lower variance than the true parameter, while the sample variance is about equally likely to report lower or higher.
+
+In the bootstrapping portion of the lab, it becomes clear that with one sample, the estimates become much similar as there is a lower amount of variability when all the data comes from one sample taken with replacement. This section also demonstrated the importance of a representative sample. When a sample was less representative, the estimates were about equivalent to each other and were centered more towards the initial sample's mean rather than the population mean. This is especially clear in @fig-poisson-bootstrap and @fig-fig-binomial-bootstrap, among many other as this became a common trend. Typically both estimates operated similarly, only really deviating from each other when the number of replacements was lower. When the number of replacements is 500, the density plots of both estimates were basically overlapping. This demonstrates that bootstrapping and more limited data that could possibly be less representative makes bias differences between these estimates less prominent. 
+
+# Citations
+
+I used the tidyverse package [@tidyverse] to read the csv, and both the tidyverse package [@tidyverse] and the patchwork package [@patchwork] to create graphs, the knitr package [@knitr] to help organize and reference graphs, the ggridges package [@ggridges] to help create the density plots, all while using R [@R] as my coding language.
