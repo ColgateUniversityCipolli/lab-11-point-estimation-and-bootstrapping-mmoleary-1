@@ -103,13 +103,14 @@ Start with $n=20$. Is there evidence that $S_{n-1}^2$ is a better estimator than
 set.seed(7272)
 
 #Poisson Distribution
-  psv = c()
-  pad = c()
+  psv = c() #empty vector to hold sample variance
+  pad = c() #empty vector to hold avg. distance from mean
 for(i in 1:1000){
-  x = rpois(20, 2)
+  x = rpois(20, 2) #generates sample
   psv[i] = var(x)
   pad[i] = ((20-1)/20)*var(x)
 }
+#for 1000 simulations, calculuate the sample variance and average squared distance from mean
 mean(psv)
 mean(pad)
 
@@ -163,16 +164,20 @@ Create a plot or combination of plots (using patchwork) to show the results acro
 #| fig-cap: "Poisson Variance Estimation."
 #| fig-width: 5
 #| fig-height: 3
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
+
 
 ggdat.p <- tibble(sample.variance = psv,
                 average.squared.distance = pad) |>
  pivot_longer(everything(),
  names_to = "Estimator",
  values_to = "Estimate")
- 
+ #create a tibble with columns psv and pad, 
+ # name the columns estimator
+ #call the values estimates
+
+#For a histogram
+#breaks fit the possible values of the data
 ggplot(ggdat.p) +
  geom_histogram(aes(x = Estimate, 
                     y = after_stat(density)),
@@ -193,6 +198,7 @@ P.Estimate.Summary = ggdat.p|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+#creates a numerical summary of data based on the past distribution
 ```
 
 ```{r}
@@ -201,6 +207,7 @@ P.Estimate.Summary = ggdat.p|>
 #| tbl-align: "center"
 P.Estimate.Summary |>
   knitr::kable(digits = 2)
+#creates a table to display summary
 ```
 
 ```{r}
@@ -208,16 +215,19 @@ P.Estimate.Summary |>
 #| fig-cap: "Binomial Variance Estimation."
 #| fig-width: 5
 #| fig-height: 3
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.b <- tibble(sample.variance = bsv,
                 average.squared.distance = bad) |>
  pivot_longer(everything(),
  names_to = "Estimator",
  values_to = "Estimate")
- 
+ #create a tibble with columns psv and pad, 
+ # name the columns estimator
+ #call the values estimates
+
+#For a histogram
+#breaks fit the possible values of the data
 ggplot(ggdat.b) +
  geom_histogram(aes(x = Estimate, 
                     y = after_stat(density)),
@@ -238,6 +248,7 @@ B.Estimate.Summary = ggdat.b|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates a numerical summary of data based on the past distribution
 ```
 
 ```{r}
@@ -246,6 +257,7 @@ B.Estimate.Summary = ggdat.b|>
 #| tbl-align: "center"
 B.Estimate.Summary |>
   knitr::kable(digits = 2)
+#creates a table to display summary
 ```
 
 ```{r}
@@ -253,16 +265,19 @@ B.Estimate.Summary |>
 #| fig-cap: "Normal Variance Estimation."
 #| fig-width: 5
 #| fig-height: 3
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.n <- tibble(sample.variance = nsv,
                 average.squared.distance = nad) |>
  pivot_longer(everything(),
  names_to = "Estimator",
  values_to = "Estimate")
- 
+ #create a tibble with columns psv and pad, 
+ # name the columns estimator
+ #call the values estimates
+
+#For a histogram
+#breaks fit the possible values of the data
 ggplot(ggdat.n) +
  geom_histogram(aes(x = Estimate, 
                     y = after_stat(density)),
@@ -283,6 +298,7 @@ N.Estimate.Summary = ggdat.n|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates a numerical summary of data based on the past distribution
 ```
 
 ```{r}
@@ -291,6 +307,7 @@ N.Estimate.Summary = ggdat.n|>
 #| tbl-align: "center"
 N.Estimate.Summary |>
   knitr::kable(digits = 2)
+#creates a table to display summary
 ```
 
 ```{r}
@@ -298,16 +315,19 @@ N.Estimate.Summary |>
 #| fig-cap: "Exponential Variance Estimation."
 #| fig-width: 5
 #| fig-height: 3
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.e <- tibble(sample.variance = esv,
                 average.squared.distance = ead) |>
  pivot_longer(everything(),
  names_to = "Estimator",
  values_to = "Estimate")
- 
+ #create a tibble with columns psv and pad, 
+ # name the columns estimator
+ #call the values estimates
+
+#For a histogram
+#breaks fit the possible values of the data
 ggplot(ggdat.e) +
  geom_histogram(aes(x = Estimate, 
                     y = after_stat(density)),
@@ -328,6 +348,7 @@ E.Estimate.Summary = ggdat.e|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates a numerical summary of data based on the past distribution
 ```
 
 ```{r}
@@ -336,6 +357,7 @@ E.Estimate.Summary = ggdat.e|>
 #| tbl-align: "center"
 E.Estimate.Summary |>
   knitr::kable(digits = 2)
+#creates a table to display summary
 ```
 
 ## Simulation over various sample sizes
@@ -355,7 +377,7 @@ set.seed(7272)
     
     return(psv_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
   pad = function(n) {
     pad_vals = numeric(1000)
     for (i in 1:1000) {
@@ -365,7 +387,7 @@ set.seed(7272)
     
     return(pad_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
 #Binomial Distribution
   bsv = function(n) {
     bsv_vals = numeric(1000)
@@ -376,7 +398,7 @@ set.seed(7272)
     
     return(bsv_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
   bad = function(n) {
     bad_vals = numeric(1000)
     for (i in 1:1000) {
@@ -386,7 +408,7 @@ set.seed(7272)
     
     return(bad_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
 #Normal Distribution
 
   nsv = function(n) {
@@ -398,7 +420,7 @@ set.seed(7272)
     
     return(nsv_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
   nad = function(n) {
     nad_vals = numeric(1000)
     for (i in 1:1000) {
@@ -408,7 +430,7 @@ set.seed(7272)
     
     return(nad_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
 #Exponential Distribution
   esv = function(n) {
     esv_vals = numeric(1000)
@@ -419,7 +441,7 @@ set.seed(7272)
     
     return(esv_vals)
   }
-
+#creates function in terms of n that calculates 1000 simulations of size n
   ead = function(n) {
     ead_vals = numeric(1000)
     for (i in 1:1000) {
@@ -429,6 +451,7 @@ set.seed(7272)
     
     return(ead_vals)
   }
+  #creates function in terms of n that calculates 1000 simulations of size n
 ```
 
 ```{r}
@@ -436,11 +459,10 @@ set.seed(7272)
 #| fig-cap: "Poisson Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
-n_values <- c(20, 50, 100, 500)
+n_values = c(20, 50, 100, 500) 
+#creates vector to pass through function
 
 ggdat.p <- lapply(n_values, function(n) {
   tibble(
@@ -455,7 +477,9 @@ ggdat.p <- lapply(n_values, function(n) {
     names_to = "Estimator",
     values_to = "Estimate"
   )
+#creates data set in terms of the n vector with columns for estimates
 
+#creates histogram faceted on both the estimator and n value
 ggplot(ggdat.p) +
   geom_histogram(
     aes(x = Estimate, y = after_stat(density)),
@@ -478,6 +502,7 @@ P.Estimate.Summary = ggdat.p|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates data summary grouping by both n and estimator
 ```
 
 ```{r}
@@ -493,11 +518,10 @@ P.Estimate.Summary |>
 #| fig-cap: "Binomial Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
-n_values = c(20, 50, 100, 500)
+n_values = c(20, 50, 100, 500) 
+#creates vector to pass through function
 
 ggdat.b = lapply(n_values, function(n) {
   tibble(
@@ -512,7 +536,10 @@ ggdat.b = lapply(n_values, function(n) {
     names_to = "Estimator",
     values_to = "Estimate"
   )
+#creates data set in terms of the n vector with columns for estimates
 
+#creates histogram faceted on both the estimator and n value
+ggplot(ggdat.p) +
 ggplot(ggdat.b) +
   geom_histogram(
     aes(x = Estimate, y = after_stat(density)),
@@ -535,6 +562,7 @@ B.Estimate.Summary = ggdat.b|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates data summary grouping by both n and estimator
 ```
 
 ```{r}
@@ -550,11 +578,11 @@ B.Estimate.Summary |>
 #| fig-cap: "Normal Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
-n_values = c(20, 50, 100, 500)
+
+n_values = c(20, 50, 100, 500) 
+#creates vector to pass through function
 
 ggdat.n = lapply(n_values, function(n) {
   tibble(
@@ -569,7 +597,10 @@ ggdat.n = lapply(n_values, function(n) {
     names_to = "Estimator",
     values_to = "Estimate"
   )
+#creates data set in terms of the n vector with columns for estimates
 
+#creates histogram faceted on both the estimator and n value
+ggplot(ggdat.p) +
 ggplot(ggdat.n) +
   geom_histogram(
     aes(x = Estimate, y = after_stat(density)),
@@ -592,6 +623,7 @@ N.Estimate.Summary = ggdat.n|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates data summary grouping by both n and estimator
 ```
 
 ```{r}
@@ -607,11 +639,10 @@ N.Estimate.Summary |>
 #| fig-cap: "Exponential Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
-n_values = c(20, 50, 100, 500)
+n_values = c(20, 50, 100, 500) 
+#creates vector to pass through function
 
 ggdat.e = lapply(n_values, function(n) {
   tibble(
@@ -626,7 +657,10 @@ ggdat.e = lapply(n_values, function(n) {
     names_to = "Estimator",
     values_to = "Estimate"
   )
+#creates data set in terms of the n vector with columns for estimates
 
+#creates histogram faceted on both the estimator and n value
+ggplot(ggdat.p) +
 ggplot(ggdat.e) +
   geom_histogram(
     aes(x = Estimate, y = after_stat(density)),
@@ -649,6 +683,7 @@ E.Estimate.Summary = ggdat.e|>
     Precision = 1/(var(Estimate)),
     MSE = Bias^2 + var(Estimate),
   )
+  #creates data summary grouping by both n and estimator
 ```
 
 ```{r}
@@ -667,9 +702,7 @@ You have written code to draw a random sample of various sizes from each distrib
 #| fig-cap: "Poisson Density Plot Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 set.seed(7272)
 library(ggridges)
@@ -678,8 +711,8 @@ ggplot(ggdat.p) +
 geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
 geom_hline(yintercept = 0) +
 ggtitle("Poisson") +
-# lets each facet panel have its own x and y axes instead of forcing them to share the same range
 facet_wrap(~ n, scales = "free") +
+# Each facet panel can have it's own scale
 ylab("Density") +
 theme_bw()
 
@@ -690,9 +723,7 @@ theme_bw()
 #| fig-cap: "Binomial Density Plot Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 set.seed(7272)
 
@@ -700,8 +731,8 @@ ggplot(ggdat.b) +
 geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
 geom_hline(yintercept = 0) +
 ggtitle("Binomial") +
-# lets each facet panel have its own x and y axes instead of forcing them to share the same range
 facet_wrap(~ n, scales = "free") +
+# Each facet panel can have it's own scale
 ylab("Density") +
 theme_bw()
 
@@ -712,9 +743,7 @@ theme_bw()
 #| fig-cap: "Normal Density Plot Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 set.seed(7272)
 
@@ -722,8 +751,8 @@ ggplot(ggdat.n) +
 geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
 geom_hline(yintercept = 0) +
 ggtitle("Normal") +
-# lets each facet panel have its own x and y axes instead of forcing them to share the same range
 facet_wrap(~ n, scales = "free") +
+# Each facet panel can have it's own scale
 ylab("Density") +
 theme_bw()
 
@@ -734,9 +763,7 @@ theme_bw()
 #| fig-cap: "Exponential Density Plot Variance Estimation."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 set.seed(7272)
 
@@ -744,8 +771,8 @@ ggplot(ggdat.e) +
 geom_density_ridges(aes(x = Estimate, y=0, color=`Estimator`), fill=NA) +
 geom_hline(yintercept = 0) +
 ggtitle("Exponential") +
-# lets each facet panel have its own x and y axes instead of forcing them to share the same range
 facet_wrap(~ n, scales = "free") +
+# Each facet panel can have it's own scale
 ylab("Density") +
 theme_bw()
 
@@ -851,9 +878,7 @@ for(n in n.values){
 #| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.pb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -881,9 +906,7 @@ theme_bw()
 #| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.bb <- tibble(
 Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
@@ -911,9 +934,7 @@ theme_bw()
 #| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.nb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -940,9 +961,7 @@ theme_bw()
 #| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.eb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -1057,9 +1076,7 @@ for(n in n.values){
 #| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.pb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -1087,9 +1104,7 @@ theme_bw()
 #| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.bb <- tibble(
 Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
@@ -1117,9 +1132,7 @@ theme_bw()
 #| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.nb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -1146,9 +1159,7 @@ theme_bw()
 #| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 
 ggdat.eb <- tibble(
@@ -1265,10 +1276,7 @@ for(n in n.values){
 #| fig-cap: "Poisson Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
-
 ggdat.pb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
 n = factor(rep(c("n=20", "n=50", "n=100", "n=500"), each = 2000),
@@ -1295,9 +1303,7 @@ theme_bw()
 #| fig-cap: "Binomial Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.bb <- tibble(
 Estimator = rep(c("bsv", "bad"), each = 1000, times = 4),
@@ -1325,9 +1331,7 @@ theme_bw()
 #| fig-cap: "Normal Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 ggdat.nb <- tibble(
 Estimator = rep(c("psv", "pad"), each = 1000, times = 4),
@@ -1354,9 +1358,7 @@ theme_bw()
 #| fig-cap: "Exponential Density Plot Variance Estimation with Bootstrapping."
 #| fig-width: 12
 #| fig-height: 6
-#| scale: "80%"
 #| fig-align: "center"
-#| size: scriptsize
 
 set.seed(7272)
 
